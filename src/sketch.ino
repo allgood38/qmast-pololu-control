@@ -1,3 +1,10 @@
+/* Pololu DC Motor controller
+ *
+ * Revision 0.0.1
+ */
+#include "pololu_controller.h"
+
+polcore* test_device;
 
 void setup() {
     Serial.begin( 9600 );
