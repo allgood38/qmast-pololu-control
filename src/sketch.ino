@@ -2,7 +2,7 @@
  *
  * Revision 0.0.1
  */
-#include "pololu_controller.h"
+#include <pololu_controller.h>
 
 polcore* test_device;
 
@@ -18,10 +18,6 @@ void setup() {
     test_device->serial_line = &Serial2;
     test_device->device_number = 13;
     test_device->control = 0;
-
-    /*Serial2.write( 0xAA );*/
-    /*Serial2.write( 0x0D );*/
-    /*Serial2.write( 0x03 );*/
 
     pconSendCommand( test_device, cmd_safe_string );
 }
