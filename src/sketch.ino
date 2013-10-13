@@ -6,44 +6,36 @@
 
 polcore* test_device;
 
+uint8_t cmd_safe_string[] = { 1, 0x03 };
+uint8_t cmd_motor_for[] = { 3, 0x05, 0x00, 0x64 };
+uint8_t cmd_motor_stop[] = { 3, 0x05, 0x00, 0x00 };
+
 void setup() {
     Serial.begin( 9600 );
     Serial2.begin( 9600 );
     
-    Serial2.write( 0xAA );
-    Serial2.write( 0x0D );
-    Serial2.write( 0x03 );
+    test_device = (polcore*) malloc( sizeof(polcore) );
+    test_device->serial_line = &Serial2;
+    test_device->device_number = 13;
+    test_device->control = 0;
+
+    /*Serial2.write( 0xAA );*/
+    /*Serial2.write( 0x0D );*/
+    /*Serial2.write( 0x03 );*/
+
+    pconSendCommand( test_device, cmd_safe_string );
 }
 
 void loop() {
-    Serial2.write( 0xAA );
-    Serial2.write( 0x0D );
-    Serial2.write( 0x05 );
-    Serial2.write( 0x00 );
-    Serial2.write( 0x64 );
+    pconSendCommand( test_device, cmd_safe_string );
+    pconSendCommand( test_device, cmd_motor_for );
+    delay(500);
+    pconSendCommand( test_device, cmd_motor_stop );
+    delay(500);
 
-    delay(1000);
-
-    Serial2.write( 0xAA );
-    Serial2.write( 0x0D );
-    Serial2.write( 0x05 );
-    Serial2.write( 0x00 );
-    Serial2.write( 0x00 );
-
-    delay( 1000 );
-
-    Serial2.write( 0xAA );
-    Serial2.write( 0x0D );
-    Serial2.write( 0x06 );
-    Serial2.write( 0x00 );
-    Serial2.write( 0x64 );
-
-    delay( 1000 );
-
-    Serial2.write( 0xAA );
-    Serial2.write( 0x0D );
-    Serial2.write( 0x21 );
-    Serial2.write( 0x00 );
+    pconGenMotorGo( test_device, pcon_buffer_to_dev, 45, PCON_FORWORD );
+    pconSendCommandBuffer( test_device );
+    delay(500);
 
     if( Serial2.available() != 0 ) Serial.print( (char) Serial2.read() );
 }
