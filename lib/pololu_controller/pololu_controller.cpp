@@ -4,7 +4,7 @@ uint8_t pcon_buffer_to_dev[PCON_MAX_TO_DEV];
 uint8_t pcon_buffer_from_dev[PCON_MAX_FROM_DEV];
 
 uint8_t pconInitialise( polcore* dev, 
-        HardwareSerial serial_line, uint8_t dev_number ) {
+        HardwareSerial* serial_line, uint8_t dev_number ) {
     dev = (polcore*) malloc( sizeof(polcore) );
     if( dev == NULL ) return 1; // Not enough memory
 
@@ -35,6 +35,12 @@ uint8_t pconSendCommandBuffer( polcore* dev ) {
 uint8_t pconGenMotorGo( polcore* dev, uint8_t* buffer,
         uint8_t percent_power, enum PCON_DIRECTION direction ) {
     uint8_t direction_command;
+
+    // If feedback isn't enabled for the device, send it the safe start signal
+    // before any command to guarantee it will be accepted.
+    if( ! pconCheckControl( dev, PCON_FEEDBACK_ENABLED ) ) {
+        pconSendSafe( dev );
+    }
 
     if( direction == PCON_FORWORD ) {
         direction_command = 0x05;
@@ -77,3 +83,25 @@ uint8_t pconGetResponse(polcore* dev, uint8_t* buffer ) {
 
     return 0;
 }
+
+void pconSendSafe( polcore* dev ) {
+    dev->serial_line->write( PCON_DEFAULT_COMMAND_BYTE );
+    dev->serial_line->write( dev->device_number );
+    dev->serial_line->write( 0x03 );
+}
+
+uint8_t pconCheckControl( polcore* dev, PCON_CONTROL bit ) {
+    uint8_t check = 0;
+    check = dev->control & bit;
+
+    return check;
+}
+
+void pconSetControl( polcore* dev, PCON_CONTROL bit ) {
+    dev->control |= bit;   
+}
+
+void pconClearControl( polcore* dev, PCON_CONTROL bit ) {
+    dev->control &= ~bit;
+}
+

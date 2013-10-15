@@ -22,9 +22,10 @@ extern uint8_t pcon_buffer_from_dev[PCON_MAX_FROM_DEV];
 // For debugging, needs to be replaced with something more general
 extern HardwareSerial Serial;
 
-enum {
+enum PCON_CONTROL {
     PCON_IS_RUNNING = 0x1,
-    PCON_IS_ATTACHED = 0x2
+    PCON_IS_ATTACHED = 0x2,
+    PCON_FEEDBACK_ENABLED = 0x4
 };
 
 enum PCON_DIRECTION {
@@ -43,7 +44,7 @@ typedef struct polcore {
  * initialised values.
  */
 uint8_t pconInitialise( polcore* dev, 
-        HardwareSerial serial_line, uint8_t dev_number );
+        HardwareSerial* serial_line, uint8_t dev_number );
 
 /** Writes the command string out on the serial line,
  * Returns an error code
@@ -60,6 +61,9 @@ uint8_t pconSendCommandBuffer( polcore* dev );
  * Doesn't actually send the string down the serial line, call
  * pconSendCommand with the buffer as an argument, or store the value to the
  * global buffer and call pconSendCommandBuffer
+ *
+ * Uses the low-resolution motor speed within the pololu protocol.
+ * Specifically, it just sends percentage of the maximum.
  */
 uint8_t pconGenMotorGo( polcore* dev, uint8_t* buffer,
         uint8_t percent_power, enum PCON_DIRECTION direction );
@@ -75,6 +79,25 @@ uint8_t pconGenMotorStop( polcore* dev, uint8_t* buffer );
  * the global return buffer pcon_from_dev...
  */
 uint8_t pconGetResponse(polcore* dev, uint8_t* buffer );
+
+/** Send the safe start message to the Pololu
+ *
+ * This needs to be done really often, especially if feedback from the Pololu
+ * isn't working/implemented.
+ */
+void pconSendSafe( polcore* dev );
+
+/** Performs the bitwise operations needed to check the status of the control
+ * bit.
+ *
+ * Allows only the values declared in the PCON_CONTROL enum type definition. It
+ * doesn't matter what the numerical result is, only whether it is zero or a
+ * non-zero. In the case of a non-zero you will be able to check it against one
+ * of the enumeration codes
+ */
+uint8_t pconCheckControl( polcore* dev, PCON_CONTROL bit );
+void pconSetControl( polcore* dev, PCON_CONTROL bit );
+void pconClearControl( polcore* dev, PCON_CONTROL bit );
 
 /** Planned functions
  *

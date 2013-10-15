@@ -14,12 +14,7 @@ void setup() {
     Serial.begin( 9600 );
     Serial2.begin( 9600 );
     
-    test_device = (polcore*) malloc( sizeof(polcore) );
-    test_device->serial_line = &Serial2;
-    test_device->device_number = 13;
-    test_device->control = 0;
-
-    pconSendCommand( test_device, cmd_safe_string );
+    pconInitialise( test_device, &Serial2, 13 );
 }
 
 void loop() {
