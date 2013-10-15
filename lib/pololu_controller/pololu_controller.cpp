@@ -3,6 +3,18 @@
 uint8_t pcon_buffer_to_dev[PCON_MAX_TO_DEV];
 uint8_t pcon_buffer_from_dev[PCON_MAX_FROM_DEV];
 
+uint8_t pconInitialise( polcore* dev, 
+        HardwareSerial serial_line, uint8_t dev_number ) {
+    dev = (polcore*) malloc( sizeof(polcore) );
+    if( dev == NULL ) return 1; // Not enough memory
+
+    dev->serial_line = serial_line;
+    dev->device_number = dev_number;
+    dev->control = 0;
+
+    return 0;
+}
+
 uint8_t pconSendCommand( polcore* dev, uint8_t* cmd ) {
 
     dev->serial_line->write( PCON_DEFAULT_COMMAND_BYTE );
@@ -40,9 +52,28 @@ uint8_t pconGenMotorGo( polcore* dev, uint8_t* buffer,
     buffer[2] = 0x00;
     buffer[3] = percent_power;
 
+    if( percent_power > 0 ) {
+        dev->control |= PCON_IS_RUNNING;
+    } else if ( percent_power == 0 ) {
+        dev->control &= ~percent_power;
+    }
+
     return 0;
 }
 
 uint8_t pconGenMotorStop( polcore* dev, uint8_t* buffer ) {
     return pconGenMotorGo( dev, buffer, 0x0, PCON_FORWORD );
+}
+
+uint8_t pconGetResponse(polcore* dev, uint8_t* buffer ) {
+    delay(PCON_RESPONCE_BREATH_TIME);
+
+    if( dev->serial_line->available() <= 0 ) return 1;
+    
+    for( uint8_t i = 0; i < PCON_MAX_FROM_DEV 
+            && dev->serial_line->available() > 0; i++ ) {
+        buffer[i] = dev->serial_line->read();
+    }
+
+    return 0;
 }
