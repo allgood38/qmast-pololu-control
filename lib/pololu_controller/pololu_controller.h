@@ -43,7 +43,7 @@ typedef struct polcore {
 /* Take a pointer to a polcore object and give it a memory address with
  * initialised values.
  */
-uint8_t pconInitialise( polcore* dev, 
+uint8_t pconInitialise( polcore** dev, 
         HardwareSerial* serial_line, uint8_t dev_number );
 
 /** Writes the command string out on the serial line,

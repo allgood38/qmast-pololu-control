@@ -3,14 +3,14 @@
 uint8_t pcon_buffer_to_dev[PCON_MAX_TO_DEV];
 uint8_t pcon_buffer_from_dev[PCON_MAX_FROM_DEV];
 
-uint8_t pconInitialise( polcore* dev, 
+uint8_t pconInitialise( polcore** dev, 
         HardwareSerial* serial_line, uint8_t dev_number ) {
-    dev = (polcore*) malloc( sizeof(polcore) );
+    *dev = (polcore*) malloc( sizeof(polcore) );
     if( dev == NULL ) return 1; // Not enough memory
 
-    dev->serial_line = serial_line;
-    dev->device_number = dev_number;
-    dev->control = 0;
+    (*dev)->serial_line = serial_line;
+    (*dev)->device_number = dev_number;
+    (*dev)->control = 0;
 
     return 0;
 }
